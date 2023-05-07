@@ -55,6 +55,7 @@ class NewsParser:
             print(error.__class__, error.args[0])
             return ''
 
+    @property
     def get_news_list(self) -> [str] or int:
 
         try:
