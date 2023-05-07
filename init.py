@@ -8,7 +8,7 @@ def main() -> None:
 
     news_parser = NewsParser(base_link)
 
-    links: list or int = news_parser.get_news_list()
+    links: list or int = news_parser.get_news_list
 
     content: dict or int = news_parser.get_news_page(links[0])
 
