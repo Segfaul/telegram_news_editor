@@ -1,9 +1,7 @@
 import requests
-
 from lxml import html
 
 from googletrans import Translator
-
 from random import choice
 
 from cfg import user_agents
@@ -39,17 +37,39 @@ class NewsParser:
             return -1
 
     @classmethod
-    def text_main_info(cls, content: str) -> str:
+    def text_main_info(cls, tree: html.HtmlElement) -> str:
 
         try:
-            paragraphs = content.split('\n\n')
-            main_sentences = [sentence.split('.')[0] + '.' for sentence in paragraphs]
+            content: [str] = []
+            intro_info: str = \
+                tree.xpath('//div[@class="post-content"]/p')[0].text_content().split('. ')[0].strip('.') + '\n'
+            content.append(intro_info)
 
-            return '\n'.join(main_sentences)
+            heading_paragraphs: [str] = tree.xpath('//div[@class="post-content"]/h2/following-sibling::*[1]')
+
+            for paragraph in heading_paragraphs:
+
+                if ':' != paragraph.text_content()[-1]:
+                    content.append(
+                        paragraph.text_content().split('. ')[0].strip('\n.') + '.'
+                    )
+
+            if 'magazine' in tree.xpath('//div[@class="post-content"]/p')[-1].text_content().split('. ')[0].lower():
+                outro_info: str = tree.xpath('//div[@class="post-content"]/p')[-2].text_content().split('. ')
+            else:
+                outro_info: str = tree.xpath('//div[@class="post-content"]/p')[-1].text_content().split('. ')
+
+            if len(outro_info[-1]) == 1:
+                if len(outro_info) > 1:
+                    content.append(outro_info[-2].strip('\n.') + '.')
+            else:
+                content.append(outro_info[-1].strip('\n.') + '.')
+
+            return '\n'.join(content)
 
         except ValueError as error:
             print(error.__class__, error.args[0])
-            return content
+            return ''
 
         except TypeError as error:
             print(error.__class__, error.args[0])
@@ -94,12 +114,10 @@ class NewsParser:
                                         src='en',
                                         dest='ru').text,
                             # No idea why, but unfortunately xpath form for content doesn't work at all
-                            'content': self.text_main_info(
-                                    self.translator.translate(
-                                            text=tree.xpath('//div[@class="post-content"]')[0].text_content(),
-                                            src='en',
-                                            dest='ru').text
-                                    ),
+                            'content': self.translator.translate(
+                                        text=self.text_main_info(tree),
+                                        src='en',
+                                        dest='ru').text
                             }
 
             if not news_content:

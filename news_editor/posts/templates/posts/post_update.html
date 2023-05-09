@@ -1,0 +1,26 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+  <span class="header-title">Редактирование поста "{{ post.title }}"</span>
+  <form method="post", action="{% url 'post_update' post.id %}", enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+  
+      <div class="form-error">{{ form.non_field_errors }}</div>
+  
+  {% for f in form %}
+  <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>
+    {% if f.name == 'cover' %}
+        {% if f.value %}
+            <div class="form-mini-pic">
+              <img src="{{ f.value.url }}" alt="{{ f.value.name }}" class="mini-pic">
+              <p>Текущий путь к фото: {{ f.value }}</p>
+              <a href="{% url 'post_delete_cover' post.id %}">Удалить обложку</a>
+            </div>
+        {% endif %}
+    {% endif %}
+    {{ f }}</p>
+  <div class="form-error">{{ f.errors }}</div>
+  {% endfor %}
+      <button type="submit">Сохранить изменения</button>
+  </form>
+{% endblock %}

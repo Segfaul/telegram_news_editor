@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link type="text/css" href="{% static 'posts/css/style.css' %}" rel="stylesheet" />
+	<link type="image/x-icon" rel="icon" href="{% static 'posts/img/news_editor_logo.jpg' %}"/>
+</head>
+<body>
+    <header>
+        <ul class="mainmenu">
+
+            <li class="logo">
+                <a href="{% url 'post_list' %}">
+                    <img class="logo" src="{% static 'posts/img/news_editor_logo.jpg' %}" alt="">
+                </a>
+            </li>
+            
+            {% if request.user.is_authenticated %}
+            <li class="last"> 
+                <span>{{user.username}}</span>
+                <span class="last-diversify">/</span> 
+                <a href="{% url 'logout' %}">Выйти</a>
+            </li>
+            {% else %}
+            <li class="last">
+                <a href="{% url 'login' %}">Войти</a>
+                <span class="last-diversify">/</span> 
+                <a href="{% url 'register' %}">Регистрация</a>
+            </li>
+        </ul>
+        {% endif %}
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+        {% if page_obj.has_other_pages %}
+                <nav class="pagination">
+                    <ul>
+                        {% if page_obj.has_previous %}
+                        <li class="page">
+                            <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                        </li>
+                        {% endif %}
+                
+                        {% for p in paginator.page_range %}
+                        {% if page_obj.number == p %}
+                        <li class="page page-selected">{{ p }}</li>
+                        {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+                        <li class="page">
+                            <a href="?page={{ p }}">{{ p }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                
+                        {% if page_obj.has_next %}
+                        <li class="page">
+                            <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+    </main>
+
+{% block extra_scripts %}
+{% endblock %}
+</body>
+</html>

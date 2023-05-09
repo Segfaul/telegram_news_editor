@@ -1,0 +1,7 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p>{{ error_message }}</p>
+    <img src="{% static 'posts/img/news_editor_logo.jpg' %}" alt="Logo JPG" />
+{% endblock %}

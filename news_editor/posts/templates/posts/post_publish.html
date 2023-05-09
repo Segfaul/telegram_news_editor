@@ -1,0 +1,10 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+  <span class="header-title">Публикация поста "{{ post.title }}"</span>
+  <form method="post", action="{% url 'post_publish' post.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Опубликовать</button>
+  </form>
+{% endblock %}
