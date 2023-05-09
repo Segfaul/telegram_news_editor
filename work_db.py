@@ -51,7 +51,6 @@ def get_upcoming_post(db_name: str) -> [tuple]:
 
     try:
 
-        current_time = datetime.now()
         cur.execute(
             "SELECT * FROM posts_post WHERE is_published=0 AND publication_date IS NOT NULL ORDER BY publication_date",
             )
