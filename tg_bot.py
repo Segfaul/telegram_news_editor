@@ -3,6 +3,7 @@ from aiogram.types.web_app_info import WebAppInfo
 
 from cfg import web_url
 
+
 class TelegramBot:
 
     def __init__(self, api_token: str, chat_id: int = None):
