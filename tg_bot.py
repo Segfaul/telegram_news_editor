@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types.web_app_info import WebAppInfo
 
-from cfg import web_url
+from cfg import web_app_url
 
 
 class TelegramBot:
@@ -28,7 +28,7 @@ class TelegramBot:
         async def start(message: types.Message):
             markup = types.ReplyKeyboardMarkup()
             markup.add(types.KeyboardButton('Open web page', web_app=WebAppInfo(
-                url=web_url)))
+                url=web_app_url)))
             await message.answer('Hello my friend!', reply_markup=markup)
 
     def start(self, skip_updates: bool = True):

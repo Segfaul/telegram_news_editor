@@ -1,55 +1,55 @@
 {% extends 'posts/base.html' %}
 
 {% block content %}
-  <span class="header-title">Список постов</span>
+  <span class="header-title">Post List</span>
   <div class="filter">
     <select name="filter_by" onchange="if (this.value) window.location.href=this.value">
-      <option value="" disabled selected>Не выбрано</option>
-      <option value="{% url 'post_list' %}?filter_by=">Все</option>
-      <option value="{% url 'post_list' %}?filter_by=delayed">Отложенные</option>
-      <option value="{% url 'post_list' %}?filter_by=published">Выложенные</option>
+      <option value="" disabled selected>Not selected</option>
+      <option value="{% url 'post_list' %}?filter_by=">All</option>
+      <option value="{% url 'post_list' %}?filter_by=delayed">Delayed</option>
+      <option value="{% url 'post_list' %}?filter_by=published">Published</option>
     </select>
   </div>
   {% if user.is_superuser %}
-  <a href="{% url 'post_create' %}">Написать пост...</a>
+  <a href="{% url 'post_create' %}">Write a post...</a>
   {% endif %}
   <div class="posts">
     {% for post in posts %}
     <div class="post">
       <span class="post-title">{{ post.title }}</span>
-      <p class="post-description">{{ post.description|linebreaks|truncatewords:10}}</p>
-      
+      <p class="post-description">{{ post.description|linebreaks|truncatewords:40}}</p>
+
       {% if post.cover %}
-        <img src="{{ post.cover.url }}" alt="{{ post.title }}">
+        <img src="{{ post.cover }}" alt="{{ post.title }}">
       {% endif %}
-  
+
       {% if post.publication_date <= current_time %}
-        <p class="post-date">Опубликовано: {{ post.publication_date|date:"d.m.Y H:i" }}</p>
+        <p class="post-date">Published: {{ post.publication_date|date:"d.m.Y H:i" }}</p>
       {% else %}
         <p class="post-date">{{ post.publication_date|date:"d.m.Y H:i" }}</p>
       {% endif %}
-  
+
       {% if user.is_superuser %}
         <div class="crud">
           {% if not post.publication_date %}
-          <a class="crud-update" href="{% url 'post_update' post.pk %}">Редактировать</a>
-  
-          <a class="crud-update" href="{% url 'post_publish' post.pk %}">Опубликовать</a>
+          <a class="crud-update" href="{% url 'post_update' post.pk %}">Edit</a>
+
+          <a class="crud-update" href="{% url 'post_publish' post.pk %}">Publish</a>
 
           <form action="{% url 'post_delete' post.pk %}" method="post">
             {% csrf_token %}
-            <button class="crud-delete" type="submit">Удалить</button>
+            <button class="crud-delete" type="submit">Delete</button>
           </form>
               <!-- <form action="{% url 'post_publish' post.pk %}" method="post">
               {% csrf_token %}
               <button type="submit">Опубликовать</button>
               </form> -->
           {% else %}
-              {% if post.publication_date > current_time %}
+              {% if not post.is_published %}
               <!-- <a href="{% url 'post_un_publish' post.pk %}">Отмена</a> -->
               <form action="{% url 'post_un_publish' post.pk %}" method="post">
               {% csrf_token %}
-              <button class="crud-cancel" type="submit">Отмена</button>
+              <button class="crud-cancel" type="submit">Cancel</button>
               </form>
               {% endif %}
           {% endif %}

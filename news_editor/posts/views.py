@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from django.contrib.auth import logout, login
@@ -41,7 +42,6 @@ class PostListView(LoginRequiredMixin, ListView):
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
     success_url = reverse_lazy('post_list')
-    template_name = 'posts/post_confirm_delete.html'
     raise_exception = True
 
     def test_func(self):
@@ -113,7 +113,6 @@ def delete_cover(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
     if post.cover:
-        post.cover.delete()
         post.cover = None
         post.save()
 
@@ -146,34 +145,35 @@ def logout_user(request):
 
 def tr_handler404(request, exception):
     """
-    Обработка ошибки 404
+    404 Error handler
     """
     return render(request=request, template_name='posts/exceptions/error_page.html', status=404, context={
-        'title': 'Страница не найдена: 404',
-        'error_message': 'К сожалению такая страница была не найдена, или перемещена',
+        'title': 'Page not found: 404',
+        'error_message': 'Unfortunately, such a page was not found, or was moved',
     })
 
 
 def tr_handler500(request):
     """
-    Обработка ошибки 500
+    500 Error handler
     """
     return render(request=request, template_name='posts/exceptions/error_page.html', status=500, context={
-        'title': 'Ошибка сервера: 500',
-        'error_message':
-            'Внутренняя ошибка сайта, вернитесь на главную страницу, отчет об ошибке мы направим администрации сайта',
+        'title': 'Server error: 500',
+        'error_message': 'Internal site error, go back to the home page, '
+                         'we will send an error report to the site administration',
     })
 
 
 def tr_handler403(request, exception):
     """
-    Обработка ошибки 403
+    403 Error handler
     """
     if request.user.is_authenticated:
         return redirect('post_list')
     else:
         return redirect('login')
+
     # return render(request=request, template_name='posts/exceptions/error_page.html', status=403, context={
-    #     'title': 'Ошибка доступа: 403',
-    #     'error_message': 'Доступ к этой странице ограничен',
+    #     'title': 'Access error: 403',
+    #     'error_message': 'Access to this page is restricted',
     # })
