@@ -22,13 +22,13 @@
             <li class="last"> 
                 <span>{{user.username}}</span>
                 <span class="last-diversify">/</span> 
-                <a href="{% url 'logout' %}">Выйти</a>
+                <a href="{% url 'logout' %}">Logout</a>
             </li>
             {% else %}
             <li class="last">
-                <a href="{% url 'login' %}">Войти</a>
+                <a href="{% url 'login' %}">Login</a>
                 <span class="last-diversify">/</span> 
-                <a href="{% url 'register' %}">Регистрация</a>
+                <a href="{% url 'register' %}">Register</a>
             </li>
         </ul>
         {% endif %}

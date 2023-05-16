@@ -2,84 +2,101 @@ import sqlite3
 from datetime import datetime
 
 
-# Function for adding a new record to a table
-def input_post(db_name: str, title: str, description: str, photo: str = '') -> int:
-    base = sqlite3.connect(f'{db_name}')
-    cur = base.cursor()
+class PostDB:
 
-    try:
-        current_time = datetime.now()
-        cur.execute("INSERT INTO posts_post (title, description, cover, modified_date, is_published) "
-                    "VALUES (?, ?, ?, ?, ?)",
-                    (title, description, photo, current_time, 0)
-                    )
-        base.commit()
+    def __init__(self, db_root: str):
+        self.db_root = db_root
 
-    except Exception as error:
-        print(error.__class__, error.args[0])
-        return 1
+    def __str__(self):
+        return f"Post database connector for {self.db_root} root."
 
-    finally:
-        base.close()
-    return 0
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(PostDB, cls).__new__(cls)
+        return cls.instance
 
+    # Function for adding a new record to a table
+    def input_post(self, title: str, description: str, photo: str = '', origin_link: str = '') -> int:
+        base = sqlite3.connect(f'{self.db_root}')
+        cur = base.cursor()
 
-# Function to check if there is a record with the given header
-def check_post_on_exist(db_name: str, title: str) -> bool:
-    base = sqlite3.connect(f'{db_name}')
-    cur = base.cursor()
+        try:
+            current_time = datetime.now()
+            cur.execute("INSERT INTO posts_post (title, description, cover, modified_date, is_published, origin_link) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (title, description, photo, current_time, 0, origin_link)
+                        )
+            base.commit()
 
-    try:
+        except Exception as error:
+            print(error.__class__, error.args[0])
+            return 1
 
-        cur.execute("SELECT * FROM posts_post WHERE title=?", (title,))
-        result = cur.fetchone()
+        finally:
+            base.close()
+        return 0
 
-    except Exception as error:
-        print(error.__class__, error.args[0])
-        return False
+    # Function to check if there is a record with the given header
+    def check_post_on_exist(self, title: str = '', origin_link: str = '') -> bool:
+        base = sqlite3.connect(f'{self.db_root}')
+        cur = base.cursor()
 
-    finally:
-        base.close()
+        try:
 
-    return result is not None
+            if len(origin_link) > 0:
+                cur.execute("SELECT * FROM posts_post WHERE title=? OR origin_link=?", (title, origin_link,))
 
+            else:
+                cur.execute("SELECT * FROM posts_post WHERE title=?", (title,))
 
-# Function to get a list of all records where is_published = True and publication_date > datetime.now()
-def get_upcoming_post(db_name: str) -> [tuple]:
-    base = sqlite3.connect(f'{db_name}')
-    cur = base.cursor()
+            result = cur.fetchone()
 
-    try:
+        except Exception as error:
+            print(error.__class__, error.args[0])
+            return False
 
-        cur.execute(
-            "SELECT * FROM posts_post WHERE is_published=0 AND publication_date IS NOT NULL ORDER BY publication_date",
-            )
-        result = cur.fetchall()
+        finally:
+            base.close()
 
-    except Exception as error:
-        print(error.__class__, error.args[0])
-        return []
+        return result is not None
 
-    finally:
-        base.close()
+    # Function to get a list of all records where is_published = True and publication_date > datetime.now()
+    @property
+    def get_upcoming_post(self) -> [tuple]:
+        base = sqlite3.connect(f'{self.db_root}')
+        cur = base.cursor()
 
-    return result
+        try:
 
+            cur.execute(
+                "SELECT * FROM posts_post WHERE is_published=0 AND publication_date IS NOT NULL ORDER BY "
+                "publication_date",
+                )
+            result = cur.fetchall()
 
-def publish_post(db_name: str, post_id: int) -> int:
-    base = sqlite3.connect(f'{db_name}')
-    cur = base.cursor()
+        except Exception as error:
+            print(error.__class__, error.args[0])
+            return []
 
-    try:
+        finally:
+            base.close()
 
-        cur.execute('UPDATE posts_post SET is_published = ? WHERE id = ?', (True, post_id))
-        base.commit()
+        return result
 
-    except Exception as error:
-        print(error.__class__, error.args[0])
-        return 1
+    def publish_post(self, post_id: int) -> int:
+        base = sqlite3.connect(f'{self.db_root}')
+        cur = base.cursor()
 
-    finally:
-        base.close()
+        try:
 
-    return 0
+            cur.execute('UPDATE posts_post SET is_published = ? WHERE id = ?', (True, post_id))
+            base.commit()
+
+        except Exception as error:
+            print(error.__class__, error.args[0])
+            return 1
+
+        finally:
+            base.close()
+
+        return 0

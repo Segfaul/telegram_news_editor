@@ -138,6 +138,7 @@ label {
 
 input[type="text"],
 input[type="password"],
+input[type="url"],
 textarea {
   resize: vertical;
   max-height: 400px;
@@ -148,6 +149,10 @@ textarea {
   border-radius: 5px;
   background-color: #2B2D42;
   color: #FFF;
+}
+
+input[type="file"] {
+    margin-bottom: 30px;
 }
 
 .pagination {
