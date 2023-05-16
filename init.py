@@ -13,6 +13,28 @@ from pyrogram.enums import ParseMode
 from cfg import *
 
 
+async def main() -> None:
+    # Int type given if request was unsuccessful or Value/Type errors occurred
+
+    try:
+
+        tg_app = Client("tg_news", api_id=tg_account_id, api_hash=tg_account_hash)
+        telegram_bot = TelegramBot(tg_api_token, tg_chat_id)
+        post_db_conn = PostDB(db_root)
+        news_parser = NewsParser(base_parse_link, {'https': f'http://{american_proxy}'})
+
+        tasks = [
+            asyncio.create_task(telegram_news_posting(post_db_conn, tg_app, telegram_bot)),
+            asyncio.create_task(void_logic(post_db_conn, news_parser, telegram_bot))
+        ]
+
+        await asyncio.gather(*tasks)
+
+    except Exception as error:
+        print(error.__class__, error.args[0])
+        quit()
+
+
 async def client_send_message(client_app: Client, chat_id: int,
                               message: str, date: datetime, photo: str = '') -> int:
     try:
@@ -116,28 +138,6 @@ async def void_logic(post_db: PostDB, news_parser: NewsParser, bot: TelegramBot)
         print(error.__class__, error.args[0])
         await bot.bot.send_message(tg_own_id, f"NEWS-parser quited with:\n\n{error.__class__}\n{error.args[0]}",
                                    parse_mode='html')
-        quit()
-
-
-async def main() -> None:
-    # Int type given if request was unsuccessful or Value/Type errors occurred
-
-    try:
-
-        tg_app = Client("tg_news", api_id=tg_account_id, api_hash=tg_account_hash)
-        telegram_bot = TelegramBot(tg_api_token, tg_chat_id)
-        post_db_conn = PostDB(db_root)
-        news_parser = NewsParser(base_parse_link, {'https': f'http://{american_proxy}'})
-
-        tasks = [
-            asyncio.create_task(telegram_news_posting(post_db_conn, tg_app, telegram_bot)),
-            asyncio.create_task(void_logic(post_db_conn, news_parser, telegram_bot))
-        ]
-
-        await asyncio.gather(*tasks)
-
-    except Exception as error:
-        print(error.__class__, error.args[0])
         quit()
 
 
