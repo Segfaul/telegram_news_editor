@@ -41,6 +41,9 @@
                     <ul>
                         {% if page_obj.has_previous %}
                         <li class="page">
+                            {% if page_obj.paginator.page_range.0 != 1 %}
+                                <a href="?page=1">&laquo;</a>
+                            {% endif %}
                             <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
                         </li>
                         {% endif %}
@@ -58,6 +61,9 @@
                         {% if page_obj.has_next %}
                         <li class="page">
                             <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                            {% if page_obj.paginator.num_pages not in page_obj.paginator.page_range|slice:"-5:" %}
+                            <a href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+                            {% endif %}
                         </li>
                         {% endif %}
                     </ul>
