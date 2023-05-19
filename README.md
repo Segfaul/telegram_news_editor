@@ -114,7 +114,7 @@ ___
 
 ## Additional Information
 
-During the development process we noticed some errors in **Telethon** module (*Telethon==1.24.0*), so it was replaced by a more stable **Pyrogram** (*Pyrogram==2.0.106*).
+During the development process I noticed some errors in **Telethon** module (*Telethon==1.24.0*), so it was replaced by a more stable **Pyrogram** (*Pyrogram==2.0.106*).
 
 Sending messages to the group was implemented through a user session, since the standard API for telegram bots does not allow to send messages to pending and edit in the menu of the telegram application. Which is quite sad...
 ___
