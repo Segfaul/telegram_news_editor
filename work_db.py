@@ -89,7 +89,7 @@ class PostDB:
 
         try:
 
-            cur.execute('UPDATE posts_post SET is_published = ? WHERE id = ?', (True, post_id))
+            cur.execute('UPDATE posts_post SET is_published = ? WHERE id = ?', (True, post_id)).fetchall()
             base.commit()
 
         except Exception as error:

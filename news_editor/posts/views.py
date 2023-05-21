@@ -1,12 +1,11 @@
-import os
 from datetime import datetime
 
 from django.contrib.auth import logout, login
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from .forms import *
@@ -75,7 +74,6 @@ class PostPublishView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         post = form.save(commit=False)
-        # post.is_published = True
         if not post.publication_date:
             post.publication_date = timezone.now()
         post.modified_date = timezone.now()
@@ -83,17 +81,24 @@ class PostPublishView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return super().form_valid(form)
 
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def post_un_publish_view(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+class PostUnPublishView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        return tr_handler403(request, 'none')
 
-    # Изменяем значения is_published и publication_date
-    post.is_published = False
-    post.publication_date = None
-    post.save()
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
 
-    return redirect('post_list')
+        # Изменяем значения is_published и publication_date
+        if post.is_published:
+            return redirect('post_list')
+        else:
+            post.publication_date = None
+            post.save()
+
+            return redirect('post_list')
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_superuser
 
 
 class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -107,22 +112,31 @@ class PostCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_authenticated and self.request.user.is_superuser
 
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def delete_cover(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+class PostDeleteCoverView(LoginRequiredMixin, UserPassesTestMixin, View):
 
-    if post.cover:
-        post.cover = None
-        post.save()
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        return tr_handler405(request, 'none')
 
-    return redirect(reverse('post_update', args=[pk]))
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+
+        if post.cover:
+            post.cover = None
+            post.save()
+
+        return redirect(reverse('post_update', args=[pk]))
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_superuser
 
 
-class RegisterUserView(CreateView):
+class RegisterUserView(UserPassesTestMixin, CreateView):
     form_class = RegisterUserForm
     template_name = 'posts/auth/register.html'
     success_url = reverse_lazy('login')
+
+    def test_func(self):
+        return not self.request.user.is_authenticated
 
     def form_valid(self, form):
         user = form.save()
@@ -130,9 +144,12 @@ class RegisterUserView(CreateView):
         return redirect('post_list')
 
 
-class LoginUserView(LoginView):
+class LoginUserView(UserPassesTestMixin, LoginView):
     form_class = LoginUserForm
     template_name = 'posts/auth/login.html'
+
+    def test_func(self):
+        return not self.request.user.is_authenticated
 
     def get_success_url(self):
         return reverse_lazy('post_list')
@@ -172,8 +189,17 @@ def tr_handler403(request, exception):
         return redirect('post_list')
     else:
         return redirect('login')
-
     # return render(request=request, template_name='posts/exceptions/error_page.html', status=403, context={
     #     'title': 'Access error: 403',
     #     'error_message': 'Access to this page is restricted',
     # })
+
+
+def tr_handler405(request, exception):
+    """
+    405 Error handler
+    """
+    if request.user.is_authenticated:
+        return redirect('post_list')
+    else:
+        return redirect('login')

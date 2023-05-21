@@ -1,30 +1,32 @@
-import requests
-from lxml import html
-
-from googletrans import Translator
 from random import choice
 
-from cfg import user_agents
+import requests
+from lxml import html
+from googletrans import Translator
 
 
 class NewsParser:
 
-    def __init__(self, main_link: str, proxy: dict = None):
+    def __init__(self, main_link: str, headers: dict = None, proxy: dict = None):
         # main_link is our catalog link, proxy is required however it can be separately set for each function
         # Also we need a translator class_ex to translate all the articles to 'ru' lang
         self.link = main_link
         self.proxy = proxy
+        self.headers = headers
         self.translator = Translator()
 
     @classmethod
-    def get_response(cls, link: str, proxy: dict = None) -> requests.Request or int:
+    def get_response(cls, link: str, headers: dict = None, proxy: dict = None) -> requests.Request or int:
 
         if proxy is None:
             proxy = {}
 
+        if headers is None:
+            headers = {}
+
         try:
 
-            request = requests.get(link, headers={'user-agent': choice(user_agents)}, proxies=proxy)
+            request = requests.get(link, headers={'user-agent': choice(headers['user_agents'])}, proxies=proxy)
 
             if request.status_code != 200:
                 print("Unsuccessful request")
@@ -80,7 +82,7 @@ class NewsParser:
 
         try:
 
-            request = self.get_response(self.link, self.proxy)
+            request = self.get_response(self.link, self.headers, self.proxy)
 
             tree = html.fromstring(request.content)
 
@@ -101,7 +103,7 @@ class NewsParser:
         # We need a link argument here, because we parse all the sub_pages taking main link from __init__
         try:
 
-            request = self.get_response(self.link + link, self.proxy)
+            request = self.get_response(self.link + link, self.headers, self.proxy)
 
             if request.status_code != 200:
                 print("Unsuccessful request")
@@ -112,12 +114,12 @@ class NewsParser:
             news_content = {'title': self.translator.translate(
                                         text=tree.xpath('//*[contains(@id, "article-")]/h1')[0].text.strip(' '),
                                         src='en',
-                                        dest='ru').text,
+                                        dest='en').text,
                             # No idea why, but unfortunately xpath form for content doesn't work at all
                             'content': self.translator.translate(
                                         text=self.text_main_info(tree),
                                         src='en',
-                                        dest='ru').text
+                                        dest='en').text
                             }
 
             if not news_content:

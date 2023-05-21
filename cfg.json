@@ -1,0 +1,52 @@
+{
+  "parser": {
+
+    "website": {
+      "link": "https://cointelegraph.com",
+      "__comment": "Main link of website to parse"
+    },
+
+    "proxy": {
+      "american": "login:password@ip:port"
+    },
+
+    "headers": {
+      "user_agents": [
+        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/538 (KHTML, like Gecko) Chrome/36 Safari/538",
+        "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2599.0 Safari/537.36"
+      ]
+    }
+  },
+
+  "telegram": {
+    "web_app": {
+      "link": "https://google.com",
+      "__comment": "Used for your domain link to send it as a web_app in tg bot"
+    },
+
+    "bot": {
+      "api_token": ""
+    },
+
+    "notification": {
+      "id": 1,
+      "__comment": "Used to send notifications if something goes wrong"
+    },
+
+    "chat": {
+      "name": {
+        "id": -100
+      }
+    },
+
+    "client_app": {
+      "id": 2,
+      "hash": ""
+    }
+  },
+
+  "database": {
+    "root": "news_editor/db.sqlite3",
+    "__comment": "Root is relative from current init.py directory"
+  }
+}
