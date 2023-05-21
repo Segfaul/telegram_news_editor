@@ -18,7 +18,7 @@ ___
 ## Technologies and Frameworks
 - Python 3.11 
 - Django 4.2.1
-- Pyrogram 2.0.106
+- Pyrogram 2.0.1
 - HTML, CSS, JS
 - SQLite 3
 ___
