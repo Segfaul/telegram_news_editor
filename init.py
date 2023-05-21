@@ -1,31 +1,47 @@
 import asyncio
-from datetime import datetime, timedelta
-
-from work_db import *
-from parse_news import NewsParser
-from tg_bot import TelegramBot
+from datetime import timedelta, datetime
+from json import load
 
 import aiogram.utils.markdown as md
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 
-
-from cfg import *
+from work_db import *
+from parse_news import NewsParser
+from tg_bot import TelegramBot
 
 
 async def main() -> None:
     # Int type given if request was unsuccessful or Value/Type errors occurred
 
     try:
+        cfg = load(open("cfg.json", "r"))
 
-        tg_app = Client("tg_news", api_id=tg_account_id, api_hash=tg_account_hash)
-        telegram_bot = TelegramBot(tg_api_token, tg_chat_id)
-        post_db_conn = PostDB(db_root)
-        news_parser = NewsParser(base_parse_link, {'https': f'http://{american_proxy}'})
+        tg_app = Client(
+            "tg_news",
+            api_id=cfg['telegram']['client_app']['id'],
+            api_hash=cfg['telegram']['client_app']['hash']
+        )
+
+        telegram_bot = TelegramBot(
+            cfg['telegram']['bot']['api_token'],
+            cfg['telegram']['chat']['name']['id'],
+            cfg['telegram']['web_app']['link']
+        )
+
+        post_db_conn = PostDB(cfg['database']['root'])
+
+        news_parser = NewsParser(
+            cfg['parser']['website']['link'],
+            cfg['parser']['headers'],
+            {'https': f"http://{cfg['parser']['proxy']['american']}"},
+        )
 
         tasks = [
-            asyncio.create_task(telegram_news_posting(post_db_conn, tg_app, telegram_bot)),
-            asyncio.create_task(void_logic(post_db_conn, news_parser, telegram_bot))
+            asyncio.create_task(void_logic(post_db_conn, news_parser, telegram_bot,
+                                           cfg['telegram']['notification']['id'])),
+            asyncio.create_task(telegram_news_posting(post_db_conn, tg_app, telegram_bot,
+                                                      cfg['telegram']['notification']['id'])),
         ]
 
         await asyncio.gather(*tasks)
@@ -48,7 +64,8 @@ async def client_send_message(client_app: Client, chat_id: int,
             else:
                 await client_app.send_message(chat_id=chat_id,
                                               text=message,
-                                              parse_mode=ParseMode.HTML, schedule_date=date)
+                                              parse_mode=ParseMode.HTML, schedule_date=date,
+                                              disable_web_page_preview=True)
 
     except Exception as error:
         print(error.__class__, error.args[0])
@@ -57,7 +74,7 @@ async def client_send_message(client_app: Client, chat_id: int,
     return 0
 
 
-async def telegram_news_posting(post_db: PostDB, client_app: Client, bot: TelegramBot) -> None:
+async def telegram_news_posting(post_db: PostDB, client_app: Client, bot: TelegramBot, tg_own_id: int) -> None:
     try:
         print("Telegram News started...")
         # 1 - Title, 2 - Description, 3 - Photo
@@ -71,7 +88,7 @@ async def telegram_news_posting(post_db: PostDB, client_app: Client, bot: Telegr
                 if (upcoming_date - datetime.now()) >= timedelta(minutes=15) \
                         or upcoming_date >= datetime.now():
 
-                    if len(upcoming_post[3]) > 0:
+                    if upcoming_post[3] and len(upcoming_post[3]) > 0:
                         await client_send_message(client_app,
                                                   bot.chat_id,
                                                   md.text(md.hbold(upcoming_post[1]) + '\n\n'
@@ -110,7 +127,7 @@ async def telegram_news_posting(post_db: PostDB, client_app: Client, bot: Telegr
         quit()
 
 
-async def void_logic(post_db: PostDB, news_parser: NewsParser, bot: TelegramBot) -> None:
+async def void_logic(post_db: PostDB, news_parser: NewsParser, bot: TelegramBot, tg_own_id: int) -> None:
     try:
         print("News parser started...")
         while 1:

@@ -14,4 +14,5 @@ if settings.DEBUG:
 
 handler403 = 'posts.views.tr_handler403'
 handler404 = 'posts.views.tr_handler404'
+handler405 = 'posts.views.tr_handler405'
 handler500 = 'posts.views.tr_handler500'

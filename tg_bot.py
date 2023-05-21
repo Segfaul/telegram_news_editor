@@ -1,16 +1,14 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types.web_app_info import WebAppInfo
 
-from cfg import web_app_url
-
 
 class TelegramBot:
 
-    def __init__(self, api_token: str, chat_id: int = None):
+    def __init__(self, api_token: str, chat_id: int = None, web_app_url: str = 'https://hello.world/'):
         self.bot = Bot(token=api_token)
         self.dp = Dispatcher(self.bot)
         self.chat_id = chat_id
-
+        self.web_app_url = web_app_url
         self.handlers()
 
     @staticmethod
@@ -28,8 +26,8 @@ class TelegramBot:
         async def start(message: types.Message):
             markup = types.ReplyKeyboardMarkup()
             markup.add(types.KeyboardButton('Open web page', web_app=WebAppInfo(
-                url=web_app_url)))
-            await message.answer('Hello my friend!', reply_markup=markup)
+                url=self.web_app_url)))
+            await message.answer('Hello, my friend!', reply_markup=markup)
 
     def start(self, skip_updates: bool = True):
         executor.start_polling(self.dp, skip_updates=skip_updates)
