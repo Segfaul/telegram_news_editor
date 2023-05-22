@@ -50,10 +50,10 @@ ___
     pip install -r requirements.txt
     ```
 
-5. Configure the configuration file cfg.py (the parser is customized for https://cointelegraph.com)
+5. Configure the configuration file cfg.json (the parser is customized for https://cointelegraph.com)
 
     ```shell
-    nano cfg.py
+    nano cfg.json
     ```
 
 6. Go to the news_editor directory
