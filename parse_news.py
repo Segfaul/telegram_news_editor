@@ -26,7 +26,8 @@ class NewsParser:
 
         try:
 
-            request = requests.get(link, headers={'user-agent': choice(headers['user_agents'])}, proxies=proxy)
+            request = requests.get(link, headers={'user-agent': choice(headers['user_agents'])} if headers else {},
+                                   proxies=proxy)
 
             if request.status_code != 200:
                 print("Unsuccessful request")
